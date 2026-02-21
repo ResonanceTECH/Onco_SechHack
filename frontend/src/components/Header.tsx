@@ -68,12 +68,20 @@ export function Header() {
             )}
           </nav>
 
-          <Link
-            to={isLanding ? '#cta' : '/#cta'}
-            className="hidden lg:inline-flex items-center px-5 py-2 rounded-full bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 transition-colors shrink-0"
-          >
-            Запросить демо
-          </Link>
+          <div className="hidden lg:flex items-center gap-2 shrink-0">
+            <Link
+              to="/auth/login"
+              className="inline-flex items-center px-5 py-2 rounded-full bg-white text-slate-900 text-sm font-semibold hover:bg-slate-50 transition-colors border-2 border-blue-500"
+            >
+              Войти
+            </Link>
+            <Link
+              to="/auth/register"
+              className="inline-flex items-center px-5 py-2 rounded-full bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 transition-colors"
+            >
+              Регистрация
+            </Link>
+          </div>
 
           <button
             className="lg:hidden p-1.5 -mr-1.5 text-white"
@@ -113,13 +121,22 @@ export function Header() {
                 </a>
               ),
             )}
-            <Link
-              to={isLanding ? '#cta' : '/#cta'}
-              className="mt-2 flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 transition-colors"
-              onClick={() => setIsMobileOpen(false)}
-            >
-              Запросить демо
-            </Link>
+            <div className="mt-2 flex items-center gap-2">
+              <Link
+                to="/auth/login"
+                className="flex-1 flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-slate-900 text-sm font-semibold hover:bg-slate-50 transition-colors border-2 border-blue-500"
+                onClick={() => setIsMobileOpen(false)}
+              >
+                Войти
+              </Link>
+              <Link
+                to="/auth/register"
+                className="flex-1 flex items-center justify-center px-5 py-2.5 rounded-full bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 transition-colors"
+                onClick={() => setIsMobileOpen(false)}
+              >
+                Регистрация
+              </Link>
+            </div>
           </nav>
         </div>
       )}
