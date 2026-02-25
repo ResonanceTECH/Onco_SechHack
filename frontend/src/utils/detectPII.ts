@@ -16,12 +16,17 @@ const PATTERNS: RegExp[] = [
   /\b(Иванов|Петров|Сидоров|Смирнов|Кузнецов)(\s+[А-ЯЁ][а-яё]+)*\b/i, // типичные фамилии
 ];
 
-const PII_HINT = /(пациент|больной|ф\.и\.о|фио|фамилия|имя|телефон|email|почта|адрес|полис|паспорт|снилс|дата\s+рождения)/i;
+// Слова-маркеры намерения ввести ПИИ (обезличенные «пациент», «больной» не считаются нарушением)
+const PII_HINT = /(ф\.и\.о|фио|фамилия|имя|телефон|email|почта|адрес|полис|паспорт|снилс|дата\s+рождения)/i;
+
+// Возраст (число + год/лет/года) — не ПИИ; дата рождения (дд.мм.гггг) остаётся ПИИ
+const AGE_ONLY = /^\d{1,3}\s*(год|года|лет|г\.?)?\s*$/i;
 
 export function detectPII(text: string): boolean {
   if (!text || typeof text !== 'string') return false;
   const normalized = text.replace(/\s+/g, ' ').trim();
   if (normalized.length < 3) return false;
+  if (AGE_ONLY.test(normalized)) return false;
 
   for (const re of PATTERNS) {
     if (re.test(normalized)) return true;

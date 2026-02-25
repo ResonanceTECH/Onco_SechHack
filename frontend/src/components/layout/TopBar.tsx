@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
-import { FileText } from 'lucide-react';
+import { PanelLeft, PanelRight, LayoutPanelTop } from 'lucide-react';
 import { useChatStore } from '../../stores/chatStore';
+import { useLayoutStore } from '../../stores/layoutStore';
 import type { CaseStatus, ChatCase } from '../../types';
 
 const STATUS_LABELS: Record<CaseStatus, string> = {
@@ -21,8 +21,14 @@ const statusColor: Record<CaseStatus, string> = {
   cancelled: 'bg-slate-400',
 };
 
+const btnClass =
+  'p-2 rounded-lg border text-slate-600 hover:bg-slate-100 hover:text-slate-800 border-slate-200 transition-colors';
+const btnActiveClass = 'bg-slate-200 border-slate-300 text-slate-800';
+
 export function TopBar() {
   const { chats, activeChatId } = useChatStore();
+  const { leftPanelOpen, middlePanelOpen, rightPanelOpen, toggleLeftPanel, toggleMiddlePanel, toggleRightPanel } =
+    useLayoutStore();
   const active = activeChatId ? chats.find((c: ChatCase) => c.id === activeChatId) : null;
 
   const title = active
@@ -44,16 +50,34 @@ export function TopBar() {
           </span>
         )}
       </div>
-      <div className="flex items-center gap-2 shrink-0">
-        {active?.id && (
-          <Link
-            to={`/doctor/check/${active.id}/report`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-slate-600 hover:bg-slate-100 border border-slate-200"
-          >
-            <FileText className="w-4 h-4" />
-            Отчет
-          </Link>
-        )}
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          type="button"
+          onClick={toggleLeftPanel}
+          className={`${btnClass} ${leftPanelOpen ? btnActiveClass : ''}`}
+          title={leftPanelOpen ? 'Свернуть левое меню' : 'Открыть левое меню'}
+          aria-label={leftPanelOpen ? 'Свернуть левое меню' : 'Открыть левое меню'}
+        >
+          <PanelLeft className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={toggleMiddlePanel}
+          className={`${btnClass} ${middlePanelOpen ? btnActiveClass : ''}`}
+          title={middlePanelOpen ? 'Свернуть среднюю панель' : 'Открыть среднюю панель'}
+          aria-label={middlePanelOpen ? 'Свернуть среднюю панель' : 'Открыть среднюю панель'}
+        >
+          <LayoutPanelTop className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={toggleRightPanel}
+          className={`${btnClass} ${rightPanelOpen ? btnActiveClass : ''}`}
+          title={rightPanelOpen ? 'Свернуть отчёт' : 'Открыть отчёт'}
+          aria-label={rightPanelOpen ? 'Свернуть отчёт' : 'Открыть отчёт'}
+        >
+          <PanelRight className="w-4 h-4" />
+        </button>
       </div>
     </header>
   );
