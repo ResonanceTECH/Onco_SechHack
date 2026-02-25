@@ -1,8 +1,9 @@
-import type { ChatCase, Message, CaseDraft } from '../../types';
+import type { ChatCase, Message, CaseDraft, ChatGroup } from '../../types';
 
 const STORAGE_CHATS = 'onco_chats';
 const STORAGE_MESSAGES = 'onco_messages';
 const STORAGE_DRAFTS = 'onco_drafts';
+const STORAGE_GROUPS = 'onco_chat_groups';
 
 function delay(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
@@ -66,4 +67,17 @@ export async function mockUpdateChat(id: string, patch: Partial<ChatCase>): Prom
 export async function mockGetMissingFields(_caseId: string): Promise<string[]> {
   await delay(600);
   return [];
+}
+
+export function getGroupsFromStorage(): ChatGroup[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_GROUPS);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveGroupsToStorage(groups: ChatGroup[]): void {
+  localStorage.setItem(STORAGE_GROUPS, JSON.stringify(groups));
 }
