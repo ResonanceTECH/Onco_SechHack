@@ -22,6 +22,7 @@ import {
 import { useChatStore } from '../../stores/chatStore';
 import { DOCTOR_NAV } from '../../constants/nav';
 import { mockCreateChat } from '../../api/mock';
+import { api, USE_REAL_API } from '../../api/http';
 import type { ChatCase, ChatGroup } from '../../types';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -110,6 +111,7 @@ function ChatItemMenu({
   onAddGroup: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -185,15 +187,44 @@ function ChatItemMenu({
         Новая группа
       </button>
       <div className="border-t border-slate-600/80 my-1.5" aria-hidden />
-      <button
-        type="button"
-        role="menuitem"
-        onClick={() => { onDelete(); onClose(); }}
-        className="w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors last:rounded-b-[10px]"
-      >
-        <Trash2 className="w-4 h-4 shrink-0" />
-        Удалить
-      </button>
+      {!confirmDelete && (
+        <button
+          type="button"
+          role="menuitem"
+          onClick={() => setConfirmDelete(true)}
+          className="w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors last:rounded-b-[10px]"
+        >
+          <Trash2 className="w-4 h-4 shrink-0" />
+          Удалить
+        </button>
+      )}
+      {confirmDelete && (
+        <div className="px-2.5 pb-2.5 pt-1.5">
+          <div className="rounded-lg bg-slate-900/95 border border-red-500/40 px-3 py-2.5 shadow-lg shadow-black/40">
+            <p className="text-xs text-slate-100 mb-2">Удалить этот кейс?</p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  onDelete();
+                  onClose();
+                }}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-md bg-red-500 hover:bg-red-600 text-xs font-medium text-white py-1.5 transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Удалить
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="flex-1 inline-flex items-center justify-center rounded-md border border-slate-600 text-xs font-medium text-slate-200 py-1.5 hover:bg-slate-700/80 transition-colors"
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -226,7 +257,30 @@ export function SidebarChats() {
   }, [hydrateFromStorage]);
 
   const handleNewCheck = async () => {
-    const chat = await mockCreateChat('Новая проверка');
+    let chat;
+    if (USE_REAL_API) {
+      try {
+        const raw = await api.createCase({
+          name: 'Новая проверка',
+          price: 0,
+          is_active: true,
+          description: 'Кейс, созданный из интерфейса ОнкоПротокол+',
+        });
+        const created = (raw as any).data ?? raw;
+        chat = {
+          id: `case-${created.id}`,
+          backendId: created.id,
+          title: created.name ?? 'Новая проверка',
+          status: 'draft' as const,
+          updatedAt: new Date().toISOString(),
+        };
+      } catch (e) {
+        console.error('Failed to create backend case, falling back to mock', e);
+        chat = await mockCreateChat('Новая проверка');
+      }
+    } else {
+      chat = await mockCreateChat('Новая проверка');
+    }
     addChat(chat);
     setActiveChatId(chat.id);
     setMessages(chat.id, [WELCOME_ASSISTANT]);
@@ -319,7 +373,7 @@ export function SidebarChats() {
                 onPin={() => updateChat(c.id, { pinned: !c.pinned })}
                 onArchive={() => updateChat(c.id, { archived: !c.archived })}
                 onDelete={() => {
-                  if (window.confirm('Удалить этот кейс?')) deleteChat(c.id);
+                  deleteChat(c.id);
                   setMenuChatId(null);
                   setMenuAnchorRect(null);
                 }}
