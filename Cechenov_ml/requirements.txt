@@ -4,3 +4,4 @@ yandexcloud>=0.379.0
 faiss-cpu>=1.13.2
 python-dotenv>=1.2.0
 sentence-transformers>=5.2.0
+SQLAlchemy>=2.0.45
