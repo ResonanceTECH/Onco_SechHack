@@ -38,12 +38,26 @@ class AuthService(BaseService):
             raise IncorrectTokenException
 
     async def register_user(self, data: UserRequestAdd):
+        """
+        Регистрация пользователя.
+
+        Логика проверки email симметрична логике логина:
+        - если email уже существует в БД → UserAlreadyExistsException
+        - если email свободен → создаём пользователя.
+        """
+        # Явно проверяем, что пользователя с таким email ещё нет
+        existing_user = await self.db.users.get_user_by_email(email=data.email)
+        if existing_user is not None:
+            raise UserAlreadyExistsException
+
         hashed_password = self.hash_password(data.password)
         new_user_data = UserAdd(email=data.email, hashed_password=hashed_password)
         try:
             await self.db.users.add(new_user_data)
             await self.db.commit()
         except ObjectAlreadyExistsException as ex:
+            # На случай гонки: уникальный индекс всё равно защитит от дубля
+            # и мы пробрасываем доменное исключение наверх.
             raise UserAlreadyExistsException from ex
 
     async def login_user(self, data: UserRequestAdd, response: Response) -> str:
