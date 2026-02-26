@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useChatStore } from '../../stores/chatStore';
 import { useLayoutStore } from '../../stores/layoutStore';
 import { mockCreateChat, mockGetMissingFields } from '../../api/mock';
+import { api, USE_REAL_API } from '../../api/http';
 import { mockStartVerification, mockGetPipelineProgress } from '../../api/mock/pipeline';
 import { mockGetReport } from '../../api/mock/reports';
 import type { CaseDraft, Step0Data, Step1Data, Step2Data, Step3Data, Step4Data } from '../../types';
@@ -107,7 +108,30 @@ export function ChatsPage() {
   };
 
   const handleNewCheck = async () => {
-    const chat = await mockCreateChat('Новая проверка');
+    let chat;
+    if (USE_REAL_API) {
+      try {
+        const raw = await api.createCase({
+          name: 'Новая проверка',
+          price: 0,
+          is_active: true,
+          description: 'Кейс, созданный из интерфейса ОнкоПротокол+',
+        });
+        const created = (raw as any).data ?? raw;
+        chat = {
+          id: `case-${created.id}`,
+          backendId: created.id,
+          title: created.name ?? 'Новая проверка',
+          status: 'draft' as const,
+          updatedAt: new Date().toISOString(),
+        };
+      } catch (e) {
+        console.error('Failed to create backend case, falling back to mock', e);
+        chat = await mockCreateChat('Новая проверка');
+      }
+    } else {
+      chat = await mockCreateChat('Новая проверка');
+    }
     addChat(chat);
     setActiveChatId(chat.id);
     setMessages(chat.id, [WELCOME_ASSISTANT]);
