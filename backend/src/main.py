@@ -14,8 +14,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 from src.api.cases import router as router_cases
 from src.api.auth import router as router_auth
-from src.api.items import router as router_items
-from src.api.payments import router as router_payments
 from src.config import settings
 from src.core.csrf import csrf_middleware, csrf_protection
 
@@ -31,10 +29,14 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        # Старые origin'ы
         "http://localhost:8000",
         "http://localhost:5500",
         "http://127.0.0.1:8000",
-        "http://127.0.0.1:5500"
+        "http://127.0.0.1:5500",
+        # Vite dev server
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
@@ -42,7 +44,7 @@ app.add_middleware(
         "Content-Type",
         "Authorization",
         "Accept",
-        "X-CSRF-Token"  # Добавляем CSRF заголовок
+        "X-CSRF-Token",  # Добавляем CSRF заголовок
     ],
     expose_headers=["X-CSRF-Token"],  # Клиент может читать этот заголовок
 )
@@ -70,8 +72,6 @@ async def custom_http_exception_handler(request, exc):
 
 app.include_router(router_cases)
 app.include_router(router_auth)
-app.include_router(router_items)
-app.include_router(router_payments)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8001, reload=True)
