@@ -6,20 +6,33 @@ export type ClinicalGoal =
   | 'palliative';
 
 export interface Step0Data {
-  nosologyId: string;
-  nosologyName: string;
-  clinicalGoal: ClinicalGoal;
+  nosologyId?: string;
+  nosologyName?: string;
+  clinicalGoal?: ClinicalGoal;
+  freeText?: string;
+  /** Шаблон: ФИО, Дата рождения, Диагноз, Анамнез заболевания */
+  templateFio?: string;
+  templateDateOfBirth?: string;
+  templateDiagnosis?: string;
+  templateAnamnesis?: string;
 }
 
 export interface Step1Data {
-  localization: string;
-  morphology: string;
-  stage: string;
+  localization?: string;
+  morphology?: string;
+  stage?: string;
   tnm?: string;
-  metastases: boolean;
+  metastases?: boolean;
   metastasesLocations?: string;
-  ecog: string;
-  comorbidities: string[];
+  ecog?: string;
+  comorbidities?: string[];
+  /** Заполнено одним текстом вместо анкеты */
+  freeText?: string;
+  /** Шаблон: ФИО, Дата рождения, Диагноз, Анамнез */
+  templateFio?: string;
+  templateDateOfBirth?: string;
+  templateDiagnosis?: string;
+  templateAnamnesis?: string;
 }
 
 export interface LabItem {
@@ -36,12 +49,13 @@ export interface MolecularMarker {
 }
 
 export interface Step2Data {
-  labResults: LabItem[];
-  hasCT: boolean;
-  hasMRI: boolean;
-  hasPetCT: boolean;
-  hasBiopsy: boolean;
-  molecularMarkers: MolecularMarker[];
+  labResults?: LabItem[];
+  hasCT?: boolean;
+  hasMRI?: boolean;
+  hasPetCT?: boolean;
+  hasBiopsy?: boolean;
+  molecularMarkers?: MolecularMarker[];
+  freeText?: string;
 }
 
 export interface DrugItem {
@@ -54,19 +68,21 @@ export interface DrugItem {
 }
 
 export interface Step3Data {
-  planStages: { stage: number; description: string }[];
-  drugs: DrugItem[];
-  gcsf: boolean;
-  antiemetic: boolean;
+  planStages?: { stage: number; description: string }[];
+  drugs?: DrugItem[];
+  gcsf?: boolean;
+  antiemetic?: boolean;
   allergiesOrLimits?: string;
+  freeText?: string;
 }
 
 export interface Step4Data {
-  useRF: boolean;
-  useNCCN: boolean;
-  useESMO: boolean;
-  versionId: string;
-  versionLabel: string;
+  useRF?: boolean;
+  useNCCN?: boolean;
+  useESMO?: boolean;
+  versionId?: string;
+  versionLabel?: string;
+  freeText?: string;
 }
 
 export interface Step5Data {

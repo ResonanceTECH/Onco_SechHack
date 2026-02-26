@@ -10,11 +10,21 @@ export type CaseStatus =
 
 export interface ChatCase {
   id: string;
+  /** ID кейса в backend (/cases), если он привязан */
+  backendId?: number;
   title: string;
   status: CaseStatus;
   updatedAt: string;
   nosology?: string;
   stage?: string;
+  pinned?: boolean;
+  archived?: boolean;
+  groupId?: string;
+}
+
+export interface ChatGroup {
+  id: string;
+  name: string;
 }
 
 export type MessageBlockType =

@@ -24,11 +24,11 @@ export function ReportCards({ status, summaryCards }: ReportCardsProps) {
           {REPORT_STATUS_LABELS[status]}
         </span>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 min-w-0">
         {summaryCards.map((c) => (
-          <div key={c.type} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-            <span className="font-medium text-slate-700">{c.label}</span>
-            <span className="ml-2 text-slate-500">{c.count}</span>
+          <div key={c.type} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm min-w-0 flex items-center justify-between gap-2">
+            <span className="font-medium text-slate-700 truncate">{c.label}</span>
+            <span className="shrink-0 text-slate-500">{c.count}</span>
           </div>
         ))}
       </div>
