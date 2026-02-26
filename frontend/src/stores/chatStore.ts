@@ -10,6 +10,7 @@ import {
   getGroupsFromStorage,
   saveGroupsToStorage,
 } from '../api/mock';
+import { api, USE_REAL_API } from '../api/http';
 
 interface ChatState {
   chats: ChatCase[];
@@ -71,6 +72,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }),
   deleteChat: (id) =>
     set((s) => {
+      const target = s.chats.find((c) => c.id === id);
+      if (USE_REAL_API && target?.backendId != null) {
+        void (async () => {
+          try {
+            await api.deleteCase(target.backendId!);
+          } catch (e) {
+            console.error('Failed to delete backend case', e);
+          }
+        })();
+      }
       const nextChats = s.chats.filter((c) => c.id !== id);
       const nextMessages = { ...s.messagesByChatId };
       delete nextMessages[id];
@@ -139,11 +150,51 @@ export const useChatStore = create<ChatState>((set, get) => ({
   getReport: (chatId) => get().reportsByChatId[chatId],
 
   hydrateFromStorage: () =>
-    set({
-      chats: getChatsFromStorage(),
-      groups: getGroupsFromStorage(),
-      messagesByChatId: getMessagesFromStorage(),
-      draftsByChatId: getDraftsFromStorage(),
+    set((state) => {
+      const base = {
+        chats: getChatsFromStorage(),
+        groups: getGroupsFromStorage(),
+        messagesByChatId: getMessagesFromStorage(),
+        draftsByChatId: getDraftsFromStorage(),
+      };
+
+      if (USE_REAL_API) {
+        void (async () => {
+          try {
+            const raw = await api.getAllCases();
+            const list =
+              Array.isArray(raw) ? raw : (raw as any).data && Array.isArray((raw as any).data)
+                ? (raw as any).data
+                : [];
+
+            const mapped: ChatCase[] = list.map((c: any): ChatCase => ({
+              id: `case-${c.id}`,
+              backendId: c.id,
+              title: c.name ?? `Кейс #${c.id}`,
+              status: c.is_active ? 'draft' : 'cancelled',
+              updatedAt: new Date().toISOString(),
+            }));
+
+            set((s) => {
+              const existingByBackendId = new Map<number, ChatCase>();
+              for (const chat of s.chats) {
+                if (chat.backendId != null) {
+                  existingByBackendId.set(chat.backendId, chat);
+                }
+              }
+
+              const mergedFromBackend = mapped.map((m) => existingByBackendId.get(m.backendId!) ?? m);
+              const localOnly = s.chats.filter((c) => c.backendId == null);
+
+              return { chats: [...mergedFromBackend, ...localOnly] };
+            });
+          } catch (e) {
+            console.error('Failed to hydrate chats from backend', e);
+          }
+        })();
+      }
+
+      return base;
     }),
   persistToStorage: () => {
     const { chats, groups, messagesByChatId, draftsByChatId } = get();
