@@ -10,6 +10,8 @@ export type CaseStatus =
 
 export interface ChatCase {
   id: string;
+  /** ID кейса в backend (/cases), если он привязан */
+  backendId?: number;
   title: string;
   status: CaseStatus;
   updatedAt: string;
