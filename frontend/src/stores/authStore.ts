@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User } from '../types';
 import { mockLogin, mockRegister, mockLogout } from '../api/mock';
+import { api, USE_REAL_API } from '../api/http';
 
 interface AuthState {
   user: User | null;
@@ -24,8 +25,20 @@ export const useAuthStore = create<AuthState>()(
       login: async (email, password) => {
         set({ isLoading: true, error: null });
         try {
-          const user = await mockLogin({ email, password });
-          set({ user, isAuthenticated: true, isLoading: false, error: null });
+          if (USE_REAL_API) {
+            await api.login({ email, password });
+            const me = (await api.me()) as { id: number; email: string };
+            const user: User = {
+              id: String(me.id),
+              email: me.email,
+              role: 'doctor',
+              displayName: me.email,
+            };
+            set({ user, isAuthenticated: true, isLoading: false, error: null });
+          } else {
+            const user = await mockLogin({ email, password });
+            set({ user, isAuthenticated: true, isLoading: false, error: null });
+          }
           return true;
         } catch (e) {
           set({
@@ -38,8 +51,20 @@ export const useAuthStore = create<AuthState>()(
       register: async (email, password, displayName) => {
         set({ isLoading: true, error: null });
         try {
-          const user = await mockRegister({ email, password, displayName });
-          set({ user, isAuthenticated: true, isLoading: false, error: null });
+          if (USE_REAL_API) {
+            await api.register({ email, password, displayName });
+            const me = (await api.me()) as { id: number; email: string };
+            const user: User = {
+              id: String(me.id),
+              email: me.email,
+              role: 'doctor',
+              displayName: me.email,
+            };
+            set({ user, isAuthenticated: true, isLoading: false, error: null });
+          } else {
+            const user = await mockRegister({ email, password, displayName });
+            set({ user, isAuthenticated: true, isLoading: false, error: null });
+          }
           return true;
         } catch (e) {
           set({
@@ -51,8 +76,15 @@ export const useAuthStore = create<AuthState>()(
       },
       logout: async () => {
         set({ isLoading: true });
-        await mockLogout();
-        set({ user: null, isAuthenticated: false, isLoading: false, error: null });
+        try {
+          if (USE_REAL_API) {
+            await api.logout();
+          } else {
+            await mockLogout();
+          }
+        } finally {
+          set({ user: null, isAuthenticated: false, isLoading: false, error: null });
+        }
       },
       clearError: () => set({ error: null }),
     }),
